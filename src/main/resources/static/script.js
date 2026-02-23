@@ -1,17 +1,10 @@
-// =========================================
-// Smart Attendance - Central Logic
-// =========================================
-
 const $ = (id) => document.getElementById(id);
 const API_BASE = window.location.origin;
 
 let stream = null;
 let countdownTimer = null;
 
-// student token from QR link: index.html?token=xxxx
-const SESSION_TOKEN = new URLSearchParams(window.location.search).get("token");
-
-// Message helper
+// Helper to show status messages
 function showMsg(text, type = "info") {
     const msg = $("msg") || $("sessionStatus");
     if (!msg) return;
@@ -19,61 +12,54 @@ function showMsg(text, type = "info") {
     msg.innerText = text;
 }
 
-// =========================================
-// Date & Time Management
-// =========================================
+// ============================
+// 1. DATE & TIME (index.html)
+// ============================
 function updateDateTime() {
     const dateEl = $("date");
     const timeEl = $("time");
     if (!dateEl && !timeEl) return;
-
     const now = new Date();
     if (dateEl) dateEl.innerText = now.toLocaleDateString("en-IN");
     if (timeEl) timeEl.innerText = now.toLocaleTimeString("en-IN");
 }
 setInterval(updateDateTime, 1000);
-updateDateTime();
 
-// =========================================
-// Camera Logic (index.html)
-// =========================================
+// ============================
+// 2. CAMERA CONTROL (index.html)
+// ============================
 async function startCamera() {
-    const video = $("video");
-    if (!video) return;
     try {
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
+        $("video").srcObject = stream;
         showMsg("✅ Camera ON", "success");
     } catch (e) {
-        showMsg("❌ Camera Permission Denied", "error");
+        showMsg("❌ Camera access denied", "error");
     }
 }
 
 function stopCamera() {
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        stream = null;
-    }
+    if (stream) stream.getTracks().forEach(t => t.stop());
     if ($("video")) $("video").srcObject = null;
     showMsg("⚠️ Camera OFF", "warn");
 }
 
-// =========================================
-// Mark Attendance (index.html)
-// =========================================
+// ============================
+// 3. MARK ATTENDANCE (index.html)
+// ============================
 async function markAttendance() {
+    const token = new URLSearchParams(window.location.search).get("token");
     const name = $("studentName")?.value.trim();
     const regNo = $("registrationNo")?.value.trim();
-    const video = $("video");
-    const canvas = $("canvas");
-
-    if (!SESSION_TOKEN) return showMsg("❌ Scan Teacher QR first", "error");
-    if (!name || !regNo) return showMsg("❌ Enter Name & Reg No", "error");
+    
+    if (!token) return showMsg("❌ Scan Teacher QR first", "error");
+    if (!name || !regNo) return showMsg("❌ Missing Name or Reg No", "error");
     if (!stream) return showMsg("❌ Start Camera first", "error");
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
+    const canvas = $("canvas");
+    canvas.width = $("video").videoWidth;
+    canvas.height = $("video").videoHeight;
+    canvas.getContext("2d").drawImage($("video"), 0, 0);
     const imageData = canvas.toDataURL("image/png");
 
     try {
@@ -81,43 +67,35 @@ async function markAttendance() {
         const res = await fetch(`${API_BASE}/student/add`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, registrationNo: regNo, image: imageData, token: SESSION_TOKEN })
+            body: JSON.stringify({ name, registrationNo: regNo, image: imageData, token })
         });
-
         if (res.ok) {
-            showMsg("✅ Attendance Recorded!", "success");
-            $("photo").src = imageData;
-            $("photo-container").style.display = "block";
-            $("studentName").value = "";
-            $("registrationNo").value = "";
+            showMsg("✅ Attendance Saved", "success");
+            $("studentName").value = ""; $("registrationNo").value = "";
         } else {
             showMsg("❌ Failed to save", "error");
         }
-    } catch (e) {
-        showMsg("❌ Server Error", "error");
-    }
+    } catch (e) { showMsg("❌ Server unreachable", "error"); }
 }
 
-// =========================================
-// Teacher Session (teacher.html)
-// =========================================
+// ============================
+// 4. TEACHER SESSION (teacher.html)
+// ============================
 async function startTeacherSession() {
     try {
+        showMsg("⏳ Creating session...", "info");
         const res = await fetch(`${API_BASE}/session/start`);
-        const data = await res.json();
+        if (!res.ok) throw new Error("Backend error");
         
-        // Use current folder path to generate the student link
-        const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-        const studentUrl = `${window.location.origin}${currentPath}/index.html?token=${data.token}`;
+        const data = await res.json();
+        const studentUrl = `${window.location.origin}/index.html?token=${data.token}`;
 
-        $("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(studentUrl)}`;
+        $("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(studentUrl)}`;
         $("studentLink").href = studentUrl;
         $("qrBox").style.display = "block";
         
         startCountdown(data.expiresInSeconds || 30);
-    } catch (e) {
-        showMsg("❌ Could not start session", "error");
-    }
+    } catch (e) { showMsg("❌ Could not connect to Spring Boot", "error"); }
 }
 
 function startCountdown(seconds) {
@@ -125,7 +103,7 @@ function startCountdown(seconds) {
     clearInterval(countdownTimer);
     countdownTimer = setInterval(() => {
         left--;
-        $("leftSec").innerText = left;
+        if ($("leftSec")) $("leftSec").innerText = left;
         if (left <= 0) {
             clearInterval(countdownTimer);
             showMsg("⏳ Session Expired", "warn");
@@ -134,68 +112,42 @@ function startCountdown(seconds) {
     }, 1000);
 }
 
-// =========================================
-// Report Generation (report.html)
-// =========================================
+// ============================
+// 5. REPORT GENERATION (report.html)
+// ============================
 async function generateReport() {
     const regNo = $("regNoInput")?.value.trim();
-    if (!regNo) return showMsg("❌ Enter Registration No", "error");
+    if (!regNo) return showMsg("❌ Enter Reg No", "error");
 
     try {
         const res = await fetch(`${API_BASE}/student/report/${regNo}`);
         const data = await res.json();
-        
         if (data && data.length > 0) {
             $("displayName").innerText = data[0].name;
-            const percent = ((data.length / 40) * 100).toFixed(1);
-            $("displayCount").innerText = `${data.length} (${percent}%)`;
+            $("displayCount").innerText = `${data.length} (${((data.length/40)*100).toFixed(1)}%)`;
             $("reportResult").style.display = "block";
-            showMsg("✅ Report Loaded", "success");
-        } else {
-            showMsg("❌ No records found", "warn");
-        }
-    } catch (e) {
-        showMsg("❌ Server Error", "error");
-    }
+            showMsg("✅ Report loaded", "success");
+        } else { showMsg("❌ No records found", "warn"); }
+    } catch (e) { showMsg("❌ Server error", "error"); }
 }
 
-// =========================================
-// CSV Export (view.html)
-// =========================================
-function exportTableToCSV(filename) {
-    let csv = [];
-    const rows = document.querySelectorAll("table tr");
-    for (const row of rows) {
-        const cols = row.querySelectorAll("td, th");
-        const rowData = Array.from(cols).map(c => `"${c.innerText}"`).join(",");
-        csv.push(rowData);
-    }
-    const blob = new Blob([csv.join("\n")], { type: "text/csv" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-}
-
-// Initialize View Page Data
+// ============================
+// 6. LOAD FULL LIST (view.html)
+// ============================
 if ($("data")) {
-    (async () => {
+    (async function() {
         try {
             const res = await fetch(`${API_BASE}/students`);
             const list = await res.json();
-            const tbody = $("data");
-            tbody.innerHTML = list.map(s => `
+            $("data").innerHTML = list.map(s => `
                 <tr>
                     <td><img src="${API_BASE}/photos/${s.photo}" class="student-photo"></td>
                     <td>${s.name}</td>
                     <td>${s.registrationNo}</td>
                     <td>${s.attendanceDate}</td>
                     <td>${s.attendanceTime}</td>
-                </tr>
-            `).join("");
-            showMsg("✅ Data Loaded", "success");
-        } catch (e) {
-            showMsg("❌ Failed to load data", "error");
-        }
+                </tr>`).join("");
+            showMsg("✅ Data updated", "success");
+        } catch (e) { showMsg("❌ Connection failed", "error"); }
     })();
 }

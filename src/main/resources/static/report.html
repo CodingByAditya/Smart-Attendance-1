@@ -6,34 +6,31 @@
   <title>Attendance Report</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
-
 <body class="center-page">
   <div class="report-card">
     <h1 class="title">📊 Attendance Report</h1>
-    <p class="subtitle">Enter Registration No to view attendance</p>
-
+    
     <div class="search-box">
-      <input id="regNoInput" type="text" placeholder="Registration No" autocomplete="off"/>
-      <button class="btn-wide" type="button" onclick="generateReport()">Generate Report</button>
+      <input id="regNoInput" type="text" placeholder="Registration No"/>
+      <button class="btn-wide" onclick="generateReport()">Generate Report</button>
     </div>
 
     <p id="msg" class="msg info">Ready</p>
 
-    <div class="top-nav">
-        <a href="teacher.html" class="back-link">← Back to Teacher Dashboard</a>
+    <div class="nav-section">
+      <button class="btn-dashboard-link" onclick="location.href='teacher.html'">
+        ← Back to Teacher Dashboard
+      </button>
     </div>
 
     <div id="reportResult" class="report-result" style="display:none;">
       <div class="label">Student</div>
       <div id="displayName" class="student-name">—</div>
-
       <div class="label" style="margin-top:14px;">Present Days</div>
       <div id="displayCount" class="attendance-count">0 (0%)</div>
-
-      <div id="attendanceStatus" class="label" style="margin-top:10px;">STATUS: —</div>
+      <div id="attendanceStatus" class="label">STATUS: —</div>
     </div>
   </div>
-
   <script src="script.js"></script>
 </body>
 </html>

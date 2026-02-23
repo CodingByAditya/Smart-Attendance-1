@@ -8,13 +8,11 @@
 </head>
 <body class="center-page">
   <div class="card">
-   
-
     <h1>🎓 Student Attendance</h1>
 
     <div class="form-grid">
-      <input type="text" id="studentName" placeholder="Student Name"/>
-      <input type="text" id="registrationNo" placeholder="Registration No"/>
+      <input type="text" id="studentName" placeholder="Student Name" autocomplete="off"/>
+      <input type="text" id="registrationNo" placeholder="Registration No" autocomplete="off"/>
     </div>
 
     <div class="datetime">
@@ -29,14 +27,18 @@
     </div>
 
     <button class="btn-wide" onclick="markAttendance()">✅ Mark Attendance</button>
+    
     <p id="msg" class="msg info">Scan Teacher QR first.</p>
-
+    
     <canvas id="canvas" style="display:none;"></canvas>
     <div id="photo-container" style="display:none; margin-top:12px;">
       <img id="photo" alt="Captured Photo"/>
     </div>
-     <div class="top-nav">
-        <a href="teacher.html" class="back-link">← Back to Teacher Dashboard</a>
+
+    <div class="nav-section">
+      <button class="btn-dashboard-link" type="button" onclick="location.href='teacher.html'">
+        ← Back to Teacher Dashboard
+      </button>
     </div>
   </div>
   <script src="script.js"></script>

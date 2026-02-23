@@ -1,145 +1,110 @@
-/* =========================================
-   Smart Attendance - Full Stylesheet
-   ========================================= */
-
 :root {
-    --bg-main: #3d4e51;    /* Background slate color from your images */
-    --bg-card: #445659;    /* Card color from your images */
-    --accent-gold: #f9c941;
-    --text-muted: rgba(255, 255, 255, 0.6);
-    --border-light: rgba(255, 255, 255, 0.1);
-}
-
-* { 
-    box-sizing: border-box; 
+	--bg-main: #3d4e51;
+	--bg-card: #445659;
+	--accent: #f9c941;
+	--accent-dark: #f1a817;
+	--text-muted: rgba(255, 255, 255, 0.6);
 }
 
 body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg-main);
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+	margin: 0;
+	font-family: 'Segoe UI', sans-serif;
+	color: #fff;
+	background-color: var(--bg-main);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
 }
 
-/* Main Card Containers */
 .card, .report-card {
-    width: 420px;
-    max-width: 92vw;
-    background-color: var(--bg-card);
-    padding: 30px 25px;
-    border-radius: 28px;
-    text-align: center;
-    box-shadow: 0 20px 45px rgba(0,0,0,0.35);
-    border: 1px solid var(--border-light);
+	width: 420px;
+	max-width: 95vw;
+	padding: 25px;
+	border-radius: 25px;
+	background-color: var(--bg-card);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	text-align: center;
+	box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
 }
 
-/* Typography */
-h1, .title {
-    font-size: 24px;
-    font-weight: 800;
-    margin: 10px 0;
-}
-
-.subtitle, .datetime {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 20px;
-}
-
-/* Inputs */
-input {
-    width: 100%;
-    padding: 14px;
-    border-radius: 12px;
-    border: none;
-    background: #f1f1f1;
-    color: #333;
-    font-size: 16px;
-    margin-bottom: 12px;
-    outline: none;
-}
-
-/* Primary Action Buttons (Gold Gradient) */
-.btn-wide {
-    width: 100%;
-    padding: 14px;
-    border-radius: 14px;
-    border: none;
-    font-weight: 800;
-    font-size: 16px;
-    background: linear-gradient(180deg, #f9c941, #f1a817);
-    color: #1a1a1a;
-    cursor: pointer;
-    transition: transform 0.1s;
-}
-
-.btn-wide:active {
-    transform: scale(0.98);
-}
-
-/* Status Message (The Dark Box) */
-.msg {
-    margin: 15px 0 5px 0;
-    padding: 12px;
-    border-radius: 12px;
-    background: #2b3a3c; /* Dark box color from your image */
-    color: var(--accent-gold);
-    font-weight: 700;
-    font-size: 15px;
-    border: 1px solid var(--border-light);
-}
-
-/* THE MINIMALIST DASHBOARD BUTTON (Requested) */
-/* This matches the "Back to Teacher Dashboard" link style precisely */
+/* Minimalist Link Style Button */
 .btn-dashboard-link {
-    background: transparent !important;
-    border: none !important;
-    color: var(--text-muted) !important;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    padding: 8px;
-    width: 100%;
-    transition: color 0.2s;
-    outline: none;
+	background: transparent !important;
+	border: none !important;
+	color: var(--text-muted) !important;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	width: 100%;
+	transition: color 0.2s;
+	outline: none;
 }
 
 .btn-dashboard-link:hover {
-    color: #fff !important;
-    text-decoration: underline;
+	color: #fff !important;
+	text-decoration: underline;
 }
 
-/* Results Display Area */
-.report-result {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-light);
+h1, .title {
+	font-size: 24px;
+	font-weight: 900;
+	margin: 10px 0;
 }
 
-.attendance-count {
-    font-size: 48px;
-    font-weight: 900;
-    color: #4cd137;
+input {
+	width: 100%;
+	padding: 14px;
+	border-radius: 12px;
+	border: none;
+	background: #f1f1f1;
+	color: #333;
+	margin-bottom: 12px;
 }
 
-.label {
-    font-size: 11px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    letter-spacing: 1px;
+button {
+	padding: 14px;
+	border-radius: 14px;
+	border: none;
+	font-weight: 800;
+	cursor: pointer;
+	background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+	color: #1a1a1a;
 }
 
-/* Video/Camera Area (Student Page) */
+.btn-wide {
+	width: 100%;
+}
+
+.btn-row {
+	display: flex;
+	gap: 10px;
+	margin: 10px 0;
+}
+
+.btn-row button {
+	flex: 1;
+}
+
+.msg {
+	margin: 15px 0 5px 0;
+	padding: 12px;
+	border-radius: 12px;
+	background: #2b3a3c;
+	color: var(--accent);
+	font-weight: 700;
+}
+
 video {
-    width: 100%;
-    height: 240px;
-    border-radius: 15px;
-    margin: 15px 0;
-    background: #2b3a3c;
-    border: 1px solid var(--border-light);
-    object-fit: cover;
+	width: 100%;
+	border-radius: 15px;
+	margin: 15px 0;
+	background: #000;
+}
+
+.student-photo {
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	object-fit: cover;
 }
