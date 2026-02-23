@@ -13,13 +13,17 @@
     <p class="subtitle">Enter Registration No to view attendance</p>
 
     <div class="search-box">
-      <input id="regNoInput" type="text" placeholder="Registration No"/>
+      <input id="regNoInput" type="text" placeholder="Registration No" autocomplete="off"/>
       <button class="btn-wide" type="button" onclick="generateReport()">Generate Report</button>
     </div>
 
     <p id="msg" class="msg info">Ready</p>
 
-    <div id="reportResult" class="report-result">
+    <div class="top-nav">
+        <a href="teacher.html" class="back-link">← Back to Teacher Dashboard</a>
+    </div>
+
+    <div id="reportResult" class="report-result" style="display:none;">
       <div class="label">Student</div>
       <div id="displayName" class="student-name">—</div>
 
@@ -28,8 +32,6 @@
 
       <div id="attendanceStatus" class="label" style="margin-top:10px;">STATUS: —</div>
     </div>
-
-    <a href="index.html" class="back-link">← Back to Attendance</a>
   </div>
 
   <script src="script.js"></script>

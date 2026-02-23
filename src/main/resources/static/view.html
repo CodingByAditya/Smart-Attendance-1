@@ -1,49 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Attendance List</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8"/><title>Attendance List</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
-
 <body>
-	<div class="page-container">
-		<div class="header-card">
-			<h2>📋 Student Attendance List</h2>
-			<p class="small-note">Smart Attendance System</p>
-			<p id="msg" class="msg info">Loading...</p>
-		</div>
+    <div class="page-container">
+        <div class="header-card">
+            <h2>📋 Student Attendance List</h2>
+            <p id="msg" class="msg info">Loading...</p>
+        </div>
 
-		<div class="table-wrapper">
-			<table class="attendance-table">
-				<thead>
-					<tr>
-						<th>Photo</th>
-						<th>Name</th>
-						<th>Registration No</th>
-						<th>Date</th>
-						<th>Time</th>
-					</tr>
-				</thead>
-				<tbody id="data"></tbody>
-			</table>
-		</div>
+        <div class="table-wrapper">
+            <table class="attendance-table">
+                <thead>
+                    <tr><th>Photo</th><th>Name</th><th>Reg No</th><th>Date</th><th>Time</th></tr>
+                </thead>
+                <tbody id="data"></tbody>
+            </table>
+        </div>
 
-		<div class="footer-action"
-			style="display: flex; gap: 15px; justify-content: center;">
-			<a href="index.html" class="btn-back">← Back</a>
-			<button type="button"
-				onclick="exportTableToCSV('Attendance_List.csv')"
-				style="padding: 12px 22px; 
-				border-radius: 14px; 
-				font-weight: 900; 
-				color: #0b1d22;
-				 background: linear-gradient(135deg, rgba(255, 211, 105, 0.95), rgba(255, 183, 3, 0.90)); 
-				 border: none; cursor: pointer;">📥 Download CSV</button>
-		</div>
-	</div>
-
-	<script src="script.js"></script>
+        <div class="footer-action">
+            <button class="btn-back" onclick="location.href='teacher.html'">← Back to Teacher Dashboard</button>
+            <button class="btn-back export" onclick="exportTableToCSV('Attendance.csv')">📥 Download CSV</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>

@@ -1,345 +1,145 @@
-* {
-	box-sizing: border-box;
-}
+/* =========================================
+   Smart Attendance - Full Stylesheet
+   ========================================= */
 
 :root {
-	--bg1: #0f2027;
-	--bg2: #203a43;
-	--bg3: #2c5364;
-	--border: rgba(255, 255, 255, 0.18);
-	--text: #fff;
-	--muted: rgba(255, 255, 255, 0.75);
-	--accent: #ffd369;
-	--accent2: #ffb703;
-	--shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    --bg-main: #3d4e51;    /* Background slate color from your images */
+    --bg-card: #445659;    /* Card color from your images */
+    --accent-gold: #f9c941;
+    --text-muted: rgba(255, 255, 255, 0.6);
+    --border-light: rgba(255, 255, 255, 0.1);
+}
+
+* { 
+    box-sizing: border-box; 
 }
 
 body {
-	margin: 0;
-	font-family: "Segoe UI", Tahoma, sans-serif;
-	color: var(--text);
-	background: radial-gradient(circle at 20% 10%, rgba(0, 255, 255, 0.12),
-		transparent 35%),
-		radial-gradient(circle at 85% 15%, rgba(255, 160, 0, 0.10),
-		transparent 40%), linear-gradient(135deg, var(--bg1), var(--bg2),
-		var(--bg3));
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-main);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
-.center-page {
-	min-height: 100vh;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 22px;
-}
-
+/* Main Card Containers */
 .card, .report-card {
-	width: 420px;
-	max-width: 92vw;
-	padding: 26px 24px;
-	text-align: center;
-	border-radius: 22px;
-	background: linear-gradient(180deg, rgba(255, 255, 255, 0.14),
-		rgba(255, 255, 255, 0.08));
-	border: 1px solid var(--border);
-	backdrop-filter: blur(14px);
-	box-shadow: var(--shadow);
+    width: 420px;
+    max-width: 92vw;
+    background-color: var(--bg-card);
+    padding: 30px 25px;
+    border-radius: 28px;
+    text-align: center;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.35);
+    border: 1px solid var(--border-light);
 }
 
-h1 {
-	margin: 0 0 14px;
-	font-size: 20px;
-	font-weight: 900;
+/* Typography */
+h1, .title {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 10px 0;
 }
 
-.form-grid {
-	display: grid;
-	gap: 10px;
-	margin-top: 12px;
+.subtitle, .datetime {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
 }
 
+/* Inputs */
 input {
-	width: 100%;
-	padding: 12px;
-	border-radius: 12px;
-	border: 1px solid rgba(255, 255, 255, 0.45);
-	background: rgba(255, 255, 255, 0.92);
-	outline: none;
-	font-size: 14px;
-	color: #0b1d22;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: #f1f1f1;
+    color: #333;
+    font-size: 16px;
+    margin-bottom: 12px;
+    outline: none;
 }
 
-.datetime {
-	margin-top: 10px;
-	font-size: 13px;
-	color: var(--muted);
-}
-
-video {
-	width: 100%;
-	height: 240px;
-	object-fit: cover;
-	border-radius: 14px;
-	margin-top: 12px;
-	border: 1px solid rgba(255, 255, 255, 0.50);
-	background: rgba(0, 0, 0, 0.28);
-}
-
-button {
-	padding: 12px;
-	border-radius: 14px;
-	border: 1px solid rgba(255, 255, 255, 0.22);
-	cursor: pointer;
-	font-weight: 900;
-	font-size: 14px;
-	color: #0b1d22;
-	background: linear-gradient(135deg, rgba(255, 211, 105, 0.95),
-		rgba(255, 183, 3, 0.90));
-	transition: transform .18s ease;
-}
-
-button:hover {
-	transform: translateY(-2px);
-}
-
-.btn-row {
-	display: flex;
-	gap: 10px;
-	margin-top: 12px;
-}
-
-.btn-row button {
-	flex: 1;
-}
-
+/* Primary Action Buttons (Gold Gradient) */
 .btn-wide {
-	width: 100%;
-	margin-top: 12px;
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    font-weight: 800;
+    font-size: 16px;
+    background: linear-gradient(180deg, #f9c941, #f1a817);
+    color: #1a1a1a;
+    cursor: pointer;
+    transition: transform 0.1s;
 }
 
+.btn-wide:active {
+    transform: scale(0.98);
+}
+
+/* Status Message (The Dark Box) */
 .msg {
-	margin-top: 12px;
-	padding: 10px 12px;
-	border-radius: 12px;
-	font-weight: 800;
-	font-size: 14px;
-	background: rgba(0, 0, 0, 0.25);
-	border: 1px solid rgba(255, 255, 255, 0.12);
-	min-height: 18px;
+    margin: 15px 0 5px 0;
+    padding: 12px;
+    border-radius: 12px;
+    background: #2b3a3c; /* Dark box color from your image */
+    color: var(--accent-gold);
+    font-weight: 700;
+    font-size: 15px;
+    border: 1px solid var(--border-light);
 }
 
-.msg.info {
-	color: var(--accent);
+/* THE MINIMALIST DASHBOARD BUTTON (Requested) */
+/* This matches the "Back to Teacher Dashboard" link style precisely */
+.btn-dashboard-link {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-muted) !important;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px;
+    width: 100%;
+    transition: color 0.2s;
+    outline: none;
 }
 
-.msg.success {
-	color: #4cd137;
+.btn-dashboard-link:hover {
+    color: #fff !important;
+    text-decoration: underline;
 }
 
-.msg.warn {
-	color: #ffd369;
-}
-
-.msg.error {
-	color: #ff6b6b;
-}
-
-#photo {
-	width: 220px;
-	max-width: 100%;
-	border-radius: 14px;
-	border: 1px solid rgba(255, 255, 255, 0.60);
-}
-
-/* footer links */
-.footer-links {
-	margin-top: 18px;
-	display: flex;
-	justify-content: center;
-	gap: 16px;
-	flex-wrap: wrap;
-}
-
-.footer-links a {
-	color: var(--accent);
-	text-decoration: none;
-	font-weight: 900;
-	font-size: 13px;
-}
-
-.footer-links a:hover {
-	text-decoration: underline;
-}
-
-/* ✅ Teacher QR box */
-.qr-box {
-	margin-top: 14px;
-	padding: 14px;
-	border-radius: 16px;
-	border: 1px solid rgba(255, 255, 255, 0.14);
-	background: rgba(255, 255, 255, 0.06);
-}
-
-.qr-title {
-	margin: 0 0 12px;
-	color: #9cffb0;
-	font-weight: 900;
-}
-
-.qr-img {
-	width: 260px;
-	max-width: 100%;
-	border-radius: 12px;
-	background: #fff;
-	padding: 10px;
-	border: 1px solid rgba(255, 255, 255, 0.60);
-}
-
-.student-link {
-	display: block;
-	margin-top: 12px;
-	color: var(--accent);
-	font-weight: 900;
-	text-decoration: none;
-}
-
-.student-link:hover {
-	text-decoration: underline;
-}
-
-/* VIEW PAGE */
-.page-container {
-	width: min(1100px, 92vw);
-	margin: 30px auto;
-	color: #fff;
-}
-
-.header-card {
-	text-align: center;
-	margin-bottom: 18px;
-}
-
-.small-note {
-	opacity: 0.85;
-	font-size: 13px;
-}
-
-.table-wrapper {
-	overflow-x: auto;
-	border-radius: 16px;
-	border: 1px solid rgba(255, 255, 255, 0.14);
-	background: rgba(255, 255, 255, 0.06);
-}
-
-.attendance-table {
-	width: 100%;
-	border-collapse: collapse;
-}
-
-.attendance-table th, .attendance-table td {
-	padding: 12px;
-	text-align: center;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.attendance-table th {
-	background: rgba(0, 0, 0, 0.25);
-	font-size: 13px;
-	text-transform: uppercase;
-}
-
-.student-photo {
-	width: 70px;
-	height: 70px;
-	object-fit: cover;
-	border-radius: 12px;
-	border: 1px solid rgba(255, 255, 255, 0.60);
-}
-
-.no-data {
-	padding: 18px;
-	font-weight: 900;
-}
-
-.footer-action {
-	text-align: center;
-	margin-top: 18px;
-}
-
-.btn-back {
-	display: inline-block;
-	padding: 12px 22px;
-	border-radius: 14px;
-	font-weight: 900;
-	text-decoration: none;
-	color: #0b1d22;
-	background: linear-gradient(135deg, rgba(255, 211, 105, 0.95),
-		rgba(255, 183, 3, 0.90));
-}
-
-.title {
-	margin: 0;
-	color: var(--accent);
-	font-size: 24px;
-	font-weight: 900;
-}
-
-.subtitle {
-	margin: 10px 0 18px;
-	font-size: 13px;
-	color: var(--muted);
-}
-
-.search-box {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-
+/* Results Display Area */
 .report-result {
-	display: none;
-	margin-top: 16px;
-	padding-top: 18px;
-	border-top: 1px solid rgba(255, 255, 255, 0.20);
-}
-
-.label {
-	font-size: 13px;
-	color: var(--accent);
-	letter-spacing: 1px;
-}
-
-.student-name {
-	font-size: 20px;
-	font-weight: 900;
-	margin-top: 8px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-light);
 }
 
 .attendance-count {
-	font-size: 44px;
-	font-weight: 900;
-	color: #4cd137;
-	margin: 8px 0 6px;
+    font-size: 48px;
+    font-weight: 900;
+    color: #4cd137;
 }
 
-.back-link {
-	display: inline-block;
-	margin-top: 18px;
-	color: rgba(255, 255, 255, 0.65);
-	text-decoration: none;
-	font-size: 12px;
+.label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 1px;
 }
 
-.back-link:hover {
-	color: #fff;
-	text-decoration: underline;
-}
-
-@media ( max-width :480px) {
-	.card, .report-card {
-		padding: 22px 18px;
-	}
-	video {
-		height: 210px;
-	}
+/* Video/Camera Area (Student Page) */
+video {
+    width: 100%;
+    height: 240px;
+    border-radius: 15px;
+    margin: 15px 0;
+    background: #2b3a3c;
+    border: 1px solid var(--border-light);
+    object-fit: cover;
 }

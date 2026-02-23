@@ -1,11 +1,8 @@
-// ============================
-// Common helpers
-// ============================
-const $ = (id) => document.getElementById(id);
+// =========================================
+// Smart Attendance - Central Logic
+// =========================================
 
-// ✅ API base auto
-// - If opened from Spring Boot (8080) -> same origin
-// - If opened from mobile -> use same host as page
+const $ = (id) => document.getElementById(id);
 const API_BASE = window.location.origin;
 
 let stream = null;
@@ -14,346 +11,191 @@ let countdownTimer = null;
 // student token from QR link: index.html?token=xxxx
 const SESSION_TOKEN = new URLSearchParams(window.location.search).get("token");
 
-// message helper
+// Message helper
 function showMsg(text, type = "info") {
-  const msg = $("msg") || $("sessionStatus");
-  if (!msg) return;
-  msg.className = `msg ${type}`;
-  msg.innerText = text;
+    const msg = $("msg") || $("sessionStatus");
+    if (!msg) return;
+    msg.className = `msg ${type}`;
+    msg.innerText = text;
 }
 
-// ============================
-// Student camera
-// ============================
-async function startCamera() {
-  const video = $("video");
-  if (!video) return;
+// =========================================
+// Date & Time Management
+// =========================================
+function updateDateTime() {
+    const dateEl = $("date");
+    const timeEl = $("time");
+    if (!dateEl && !timeEl) return;
 
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    video.srcObject = stream;
-    showMsg("✅ Camera ON", "success");
-  } catch (e) {
-    console.error(e);
-    showMsg("❌ Allow camera permission", "error");
-  }
+    const now = new Date();
+    if (dateEl) dateEl.innerText = now.toLocaleDateString("en-IN");
+    if (timeEl) timeEl.innerText = now.toLocaleTimeString("en-IN");
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+
+// =========================================
+// Camera Logic (index.html)
+// =========================================
+async function startCamera() {
+    const video = $("video");
+    if (!video) return;
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        showMsg("✅ Camera ON", "success");
+    } catch (e) {
+        showMsg("❌ Camera Permission Denied", "error");
+    }
 }
 
 function stopCamera() {
-  const video = $("video");
-  if (stream) {
-    stream.getTracks().forEach((t) => t.stop());
-    stream = null;
-  }
-  if (video) video.srcObject = null;
-  showMsg("⚠️ Camera OFF", "warn");
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+    if ($("video")) $("video").srcObject = null;
+    showMsg("⚠️ Camera OFF", "warn");
 }
 
-// ============================
-// Date & Time (index page)
-// ============================
-function updateDateTime() {
-  const dateEl = $("date");
-  const timeEl = $("time");
-  if (!dateEl && !timeEl) return;
-
-  const now = new Date();
-  if (dateEl) dateEl.innerText = now.toLocaleDateString("en-IN");
-  if (timeEl) timeEl.innerText = now.toLocaleTimeString("en-IN");
-}
-if ($("date") || $("time")) {
-  updateDateTime();
-  setInterval(updateDateTime, 1000);
-}
-
-// ============================
-// Student Mark Attendance (QR + Photo)
-// ============================
+// =========================================
+// Mark Attendance (index.html)
+// =========================================
 async function markAttendance() {
-  const nameInput = $("studentName");
-  const regInput = $("registrationNo");
-  const video = $("video");
-  const canvas = $("canvas");
+    const name = $("studentName")?.value.trim();
+    const regNo = $("registrationNo")?.value.trim();
+    const video = $("video");
+    const canvas = $("canvas");
 
-  if (!nameInput || !regInput || !video || !canvas) return;
+    if (!SESSION_TOKEN) return showMsg("❌ Scan Teacher QR first", "error");
+    if (!name || !regNo) return showMsg("❌ Enter Name & Reg No", "error");
+    if (!stream) return showMsg("❌ Start Camera first", "error");
 
-  const name = nameInput.value.trim();
-  const regNo = regInput.value.trim();
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    const imageData = canvas.toDataURL("image/png");
 
-  if (!SESSION_TOKEN) {
-    showMsg("❌ Scan Teacher QR first", "error");
-    return;
-  }
-  if (!name || !regNo) {
-    showMsg("❌ Enter Name and Registration No", "error");
-    return;
-  }
-  if (!stream) {
-    showMsg("❌ Start Camera first", "error");
-    return;
-  }
+    try {
+        showMsg("⏳ Saving...", "info");
+        const res = await fetch(`${API_BASE}/student/add`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, registrationNo: regNo, image: imageData, token: SESSION_TOKEN })
+        });
 
-  // capture image
-  canvas.width = video.videoWidth || 640;
-  canvas.height = video.videoHeight || 480;
-  canvas.getContext("2d").drawImage(video, 0, 0);
-  const imageData = canvas.toDataURL("image/png");
-
-  const photoImg = $("photo");
-  const photoWrap = $("photo-container");
-  if (photoImg) photoImg.src = imageData;
-  if (photoWrap) photoWrap.style.display = "block";
-
-  try {
-    showMsg("⏳ Saving attendance...", "info");
-
-    const res = await fetch(`${API_BASE}/student/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name,
-        registrationNo: regNo,
-        image: imageData,
-        token: SESSION_TOKEN,
-      }),
-    });
-
-    const text = await res.text().catch(() => "");
-
-    if (res.ok) {
-      showMsg(text || "✅ Attendance Saved", "success");
-      nameInput.value = "";
-      regInput.value = "";
-    } else {
-      showMsg(text || "❌ Attendance failed", "error");
+        if (res.ok) {
+            showMsg("✅ Attendance Recorded!", "success");
+            $("photo").src = imageData;
+            $("photo-container").style.display = "block";
+            $("studentName").value = "";
+            $("registrationNo").value = "";
+        } else {
+            showMsg("❌ Failed to save", "error");
+        }
+    } catch (e) {
+        showMsg("❌ Server Error", "error");
     }
-  } catch (e) {
-    console.error(e);
-    showMsg("❌ Server not reachable", "error");
-  }
 }
 
-// ============================
-// Teacher Session + QR + Countdown 30s
-// ============================
+// =========================================
+// Teacher Session (teacher.html)
+// =========================================
 async function startTeacherSession() {
-  const statusEl = $("sessionStatus");
-  const qrBox = $("qrBox");
-  const qrImg = $("qrImg");
-  const studentLink = $("studentLink");
-  const leftSec = $("leftSec");
+    try {
+        const res = await fetch(`${API_BASE}/session/start`);
+        const data = await res.json();
+        
+        // Use current folder path to generate the student link
+        const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+        const studentUrl = `${window.location.origin}${currentPath}/index.html?token=${data.token}`;
 
-  if (!statusEl || !qrBox || !qrImg || !studentLink || !leftSec) return;
-
-  statusEl.className = "msg info";
-  statusEl.innerText = "Creating session...";
-
-  try {
-    const res = await fetch(`${API_BASE}/session/start`);
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      statusEl.className = "msg error";
-      statusEl.innerText = `❌ Error: ${res.status} ${t}`;
-      return;
+        $("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(studentUrl)}`;
+        $("studentLink").href = studentUrl;
+        $("qrBox").style.display = "block";
+        
+        startCountdown(data.expiresInSeconds || 30);
+    } catch (e) {
+        showMsg("❌ Could not start session", "error");
     }
-
-    const data = await res.json();
-    const token = data.token;
-    const seconds = data.expiresInSeconds || 30;
-
-   
-    const url = `${window.location.origin}/index.html?token=${encodeURIComponent(token)}`;
-
-    
-    qrImg.src =
-      "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" +
-      encodeURIComponent(url);
-
-    
-    studentLink.href = url;
-    studentLink.innerText = "Open Student Attendance Page";
-
-    qrBox.style.display = "block";
-    startCountdown(seconds);
-  } catch (e) {
-    console.error(e);
-    statusEl.className = "msg error";
-    statusEl.innerText = "❌ Server error. Try again.";
-  }
 }
 
 function startCountdown(seconds) {
-  const statusEl = $("sessionStatus");
-  const leftSec = $("leftSec");
-  if (!statusEl || !leftSec) return;
-
-  let left = seconds;
-  leftSec.innerText = left;
-
-  if (countdownTimer) clearInterval(countdownTimer);
-
-  statusEl.className = "msg success";
-  statusEl.innerText = `🟢 Session Active | Time Left: ${left}s`;
-
-  countdownTimer = setInterval(() => {
-    left--;
-    leftSec.innerText = Math.max(left, 0);
-
-    if (left <= 0) {
-      clearInterval(countdownTimer);
-      statusEl.className = "msg warn";
-      statusEl.innerText = "⏳ Session Expired. Start again.";
-      return;
-    }
-    statusEl.innerText = `🟢 Session Active | Time Left: ${left}s`;
-  }, 1000);
+    let left = seconds;
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
+        left--;
+        $("leftSec").innerText = left;
+        if (left <= 0) {
+            clearInterval(countdownTimer);
+            showMsg("⏳ Session Expired", "warn");
+            $("qrBox").style.display = "none";
+        }
+    }, 1000);
 }
 
-async function copyStudentLink() {
-  const a = $("studentLink");
-  if (!a) return;
-
-  try {
-    await navigator.clipboard.writeText(a.href);
-    showMsg("✅ Link copied", "success");
-  } catch (e) {
-    alert("Copy failed. Long press the link and copy.");
-  }
-}
-
-
-async function loadAttendance() {
-  const tbody = $("data");
-  if (!tbody) return;
-
-  showMsg("Loading attendance...", "info");
-
-  try {
-    const res = await fetch(`${API_BASE}/students`);
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      showMsg(`❌ /students error: ${res.status} ${t}`, "error");
-      return;
-    }
-
-    const list = await res.json();
-    tbody.innerHTML = "";
-
-    if (!Array.isArray(list) || list.length === 0) {
-      showMsg("No attendance records found.", "warn");
-      tbody.innerHTML = `<tr><td colspan="5" class="no-data">No attendance records</td></tr>`;
-      return;
-    }
-
-    showMsg(`✅ Loaded ${list.length} record(s)`, "success");
-
-    list.forEach((s) => {
-      const img = s.photo
-        ? `${API_BASE}/photos/${s.photo}?t=${Date.now()}`
-        : "https://via.placeholder.com/70";
-
-      tbody.innerHTML += `
-        <tr>
-          <td><img src="${img}" class="student-photo" onerror="this.src='https://via.placeholder.com/70'"></td>
-          <td>${s.name ?? ""}</td>
-          <td>${s.registrationNo ?? ""}</td>
-          <td>${s.attendanceDate ?? ""}</td>
-          <td>${s.attendanceTime ?? ""}</td>
-        </tr>`;
-    });
-  } catch (e) {
-    console.error(e);
-    showMsg("❌ Cannot connect to server. Is Spring Boot running?", "error");
-  }
-}
-if ($("data")) loadAttendance();
-
-
+// =========================================
+// Report Generation (report.html)
+// =========================================
 async function generateReport() {
-  const regInput = $("regNoInput");
-  const resultDiv = $("reportResult");
-  if (!regInput || !resultDiv) return;
+    const regNo = $("regNoInput")?.value.trim();
+    if (!regNo) return showMsg("❌ Enter Registration No", "error");
 
-  const regNo = regInput.value.trim();
-  if (!regNo) {
-    showMsg("❌ Enter Registration No", "error");
-    return;
-  }
-
-  try {
-    showMsg("Loading report...", "info");
-
-    const res = await fetch(`${API_BASE}/student/report/${encodeURIComponent(regNo)}`);
-    if (!res.ok) {
-      showMsg("❌ No records found for this registration number", "warn");
-      resultDiv.style.display = "none";
-      return;
+    try {
+        const res = await fetch(`${API_BASE}/student/report/${regNo}`);
+        const data = await res.json();
+        
+        if (data && data.length > 0) {
+            $("displayName").innerText = data[0].name;
+            const percent = ((data.length / 40) * 100).toFixed(1);
+            $("displayCount").innerText = `${data.length} (${percent}%)`;
+            $("reportResult").style.display = "block";
+            showMsg("✅ Report Loaded", "success");
+        } else {
+            showMsg("❌ No records found", "warn");
+        }
+    } catch (e) {
+        showMsg("❌ Server Error", "error");
     }
-
-    const data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) {
-      showMsg("❌ No records found", "warn");
-      resultDiv.style.display = "none";
-      return;
-    }
-
-    const totalWorkingDays = 40; 
-    const presentDays = data.length;
-    const percent = ((presentDays / totalWorkingDays) * 100).toFixed(1);
-
-    $("displayName").innerText = data[0].name || "-";
-    $("displayCount").innerText = `${presentDays} (${percent}%)`;
-
-    const status = $("attendanceStatus");
-    const p = Number(percent);
-
-    if (p >= 85) status.innerText = "STATUS: EXCELLENT";
-    else if (p >= 75) status.innerText = "STATUS: ELIGIBLE FOR EXAM";
-    else if (p >= 65) status.innerText = "STATUS: SHORTAGE";
-    else status.innerText = "STATUS: NOT ELIGIBLE";
-
-    resultDiv.style.display = "block";
-    showMsg("✅ Report generated", "success");
-  } catch (e) {
-    console.error(e);
-    showMsg("❌ Server not running!", "error");
-  }
 }
 
-
+// =========================================
+// CSV Export (view.html)
+// =========================================
 function exportTableToCSV(filename) {
-    const csv = [];
-    const rows = document.querySelectorAll(".attendance-table tr");
-    
-    for (let i = 0; i < rows.length; i++) {
-        let row = [];
-        const cols = rows[i].querySelectorAll("td, th");
-        
-        for (let j = 1; j < cols.length; j++) {
-            let cellText = cols[j].innerText.trim();
-            
-            if (cols[j].tagName.toLowerCase() === 'td' && j === 2) {
-         
-                row.push('="' + cellText + '"'); 
-            } else {
-              
-                row.push('"' + cellText + '"'); 
-            }
-        }
-        
-        if (row.length > 0) {
-            csv.push(row.join(","));
-        }
+    let csv = [];
+    const rows = document.querySelectorAll("table tr");
+    for (const row of rows) {
+        const cols = row.querySelectorAll("td, th");
+        const rowData = Array.from(cols).map(c => `"${c.innerText}"`).join(",");
+        csv.push(rowData);
     }
+    const blob = new Blob([csv.join("\n")], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+}
 
-    const csvContent = "\uFEFF" + csv.join("\n");
-    const csvFile = new Blob([csvContent], {type: "text/csv;charset=utf-8;"});
-    
-    const downloadLink = document.createElement("a");
-    downloadLink.download = filename;
-    downloadLink.href = window.URL.createObjectURL(csvFile);
-    downloadLink.style.display = "none";
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
+// Initialize View Page Data
+if ($("data")) {
+    (async () => {
+        try {
+            const res = await fetch(`${API_BASE}/students`);
+            const list = await res.json();
+            const tbody = $("data");
+            tbody.innerHTML = list.map(s => `
+                <tr>
+                    <td><img src="${API_BASE}/photos/${s.photo}" class="student-photo"></td>
+                    <td>${s.name}</td>
+                    <td>${s.registrationNo}</td>
+                    <td>${s.attendanceDate}</td>
+                    <td>${s.attendanceTime}</td>
+                </tr>
+            `).join("");
+            showMsg("✅ Data Loaded", "success");
+        } catch (e) {
+            showMsg("❌ Failed to load data", "error");
+        }
+    })();
 }

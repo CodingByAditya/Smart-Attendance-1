@@ -6,46 +6,39 @@
   <title>Smart Attendance - Student</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
-
 <body class="center-page">
   <div class="card">
-    <h1>🎓 Smart Attendance (Student)</h1>
+   
+
+    <h1>🎓 Student Attendance</h1>
 
     <div class="form-grid">
-      <input type="text" id="studentName" placeholder="Student Name" autocomplete="off"/>
-      <input type="text" id="registrationNo" placeholder="Registration No" autocomplete="off"/>
+      <input type="text" id="studentName" placeholder="Student Name"/>
+      <input type="text" id="registrationNo" placeholder="Registration No"/>
     </div>
 
     <div class="datetime">
-      <strong>Date:</strong> <span id="date"></span> |
-      <strong>Time:</strong> <span id="time"></span>
+      <span id="date"></span> | <span id="time"></span>
     </div>
 
     <video id="video" autoplay playsinline></video>
 
     <div class="btn-row">
-      <button type="button" onclick="startCamera()">Camera ON</button>
-      <button type="button" onclick="stopCamera()">Camera OFF</button>
+      <button onclick="startCamera()">Camera ON</button>
+      <button onclick="stopCamera()">Camera OFF</button>
     </div>
 
-    <button type="button" class="btn-wide" onclick="markAttendance()">✅ Mark Attendance</button>
-
+    <button class="btn-wide" onclick="markAttendance()">✅ Mark Attendance</button>
     <p id="msg" class="msg info">Scan Teacher QR first.</p>
 
     <canvas id="canvas" style="display:none;"></canvas>
-
     <div id="photo-container" style="display:none; margin-top:12px;">
-      <img id="photo" alt="Captured Photo"
-           style="width:220px; max-width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.5);"/>
+      <img id="photo" alt="Captured Photo"/>
     </div>
-
-    <div class="footer-links">
-      <a href="teacher.html">🧑‍🏫 Teacher</a>
-      <a href="view.html">📋 Full List</a>
-      <a href="report.html">📊 Report</a>
+     <div class="top-nav">
+        <a href="teacher.html" class="back-link">← Back to Teacher Dashboard</a>
     </div>
   </div>
-
   <script src="script.js"></script>
 </body>
 </html>
